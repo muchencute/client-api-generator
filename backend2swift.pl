@@ -9,10 +9,21 @@ $inParamComments = "";
 $inParams = "";
 $outParamComments = "";
 $isArray = 0;
+$moduleName = "";
+$inParamKeyValues = "";
+
+print "import Foundation\n";
+print "import Alamofire\n\n";
 
 while (<>)
 {
-	if ($_ =~ /^\s*\/\*{2,}/) {
+	if ($_ =~ /^\s*[a-z\s]*class\s*(\w+)Router/) {
+		$moduleName = $_;
+		chomp($moduleName);
+		$moduleName =~ s/.*class\s(\w+)Router.*/$1/;
+		print "class $moduleName : AbstractRequest {\n\n";
+		$moduleName =~ s/(.*)/\L$1\E/;
+	} elsif ($_ =~ /^\s*\/\*{2,}/) {
 		$comment = "";
 		$findTitle = 1;
 	} elsif ($findTitle == 1) {
@@ -30,6 +41,7 @@ while (<>)
 			$param = $_;
 			chomp($param);
 			$param =~ s/^\s*\*\s*"(.*)"\s*:\s*#\s*.*/$1/;
+			$inParamKeyValues .= "\"$param\":$param,";
 			$param = "$param:Any,";
 			$inParams .= $param;
 		} elsif ($_ =~ /\*\//) {
@@ -58,8 +70,8 @@ while (<>)
 		$isArray = 0;
 		$findOutParams = 1;
 	} elsif ($_ =~ /Route.*(function\d{3})/) {
-		chop($inParams);
 		chomp($outParamComments);
+		chop($inParamKeyValues);
 		print "/// $title\n";
 		print "/// ```\n";
 		print "/// {\n";
@@ -67,9 +79,16 @@ while (<>)
 		print "\n/// }\n";
 		print "/// ```";
 		print "\n$inParamComments";
-		print "func $1($inParams) {}\n\n";
+		print "func $1($inParams callback: \@escaping (DataResponse<Any>) -> Void) {";
+		if (!$inParamKeyValues) {
+			$inParamKeyValues = ":";
+		}
+		print "\tpost(url:\"$moduleName\/$1\", params:[$inParamKeyValues], callback: callback)";
+		print "}\n\n";
 		$inParamComments = "";
 		$inParams = "";
 		$outParamComments = "";
+		$inParamKeyValues = "";
 	}
 }
+print "}";
