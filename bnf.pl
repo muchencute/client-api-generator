@@ -1,11 +1,11 @@
 #!/usr/bin/perl -w
 
-#$status = system("vi", "tmpfile");
-#if ($status != 0) {
-#	die "Fail to open tmpfile, $status, $!";
-#}
+$status = system("vi", "tmpfile");
+if ($status != 0) {
+	die "Fail to open tmpfile, $status, $!";
+}
 
-#open(DATA, "<tmpfile") or die "ERROR，$!";
+open(DATA, "<tmpfile") or die "ERROR，$!";
 
 $no = "001";
 
@@ -21,7 +21,7 @@ $arrayName = "";
 
 $executed = "";
 
-while (<>) {
+while (<DATA>) {
 	if ($_ =~ /^\s*class\s*=\s*(\w+).*/) {
 		$module = $1;
 	} elsif ($_ =~ /^\s*spout\s*=(.*)/) {
@@ -262,5 +262,5 @@ sub camel2pieces {
 
 }
 
-#close(DATA);
-#$status = system("rm", "-rf", "tmpfile");
+close(DATA);
+$status = system("rm", "-rf", "tmpfile");

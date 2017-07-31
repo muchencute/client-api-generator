@@ -11,12 +11,13 @@ $outParamComments = "";
 $isArray = 0;
 $moduleName = "";
 $inParamKeyValues = "";
+$combineParams = "";
 
-print "import Foundation\n";
-print "import Alamofire\n";
-print "import SwiftyJSON\n\n";
+print "package $ARGV[1];\n";
 
-while (<>)
+open(FILE, "$ARGV[0]") or die $!;
+
+while (<FILE>)
 {
 	if ($_ =~ /^\s*[a-z\s]*class\s*(\w+)Router/) {
 		$moduleName = $_;
@@ -35,15 +36,16 @@ while (<>)
 	} elsif ($findInParams == 1) {
 		if ($_ =~ /^\s*\*\s*".*"\s*:\s*#\s*.*/) {
 			$paramComment = $_;
-			$paramComment =~ s/^\s*\*\s*"(.*)"\s*:\s*#\s*(.*)/$1:$2/;
-			$paramComment = "/// - parameter $paramComment";
+			$paramComment =~ s/^\s*\*\s*"(.*)"\s*:\s*#\s*(.*)/$1 $2/;
+			$paramComment = " * \@param $paramComment";
 			$inParamComments .= $paramComment;
 
 			$param = $_;
 			chomp($param);
 			$param =~ s/^\s*\*\s*"(.*)"\s*:\s*#\s*.*/$1/;
 			$inParamKeyValues .= "\"$param\":$param,";
-			$param = "$param:Any,";
+			$combineParams .= "jsonObject.put(\"$param\", $param);\n";
+			$param = "Object $param,";
 			$inParams .= $param;
 		} elsif ($_ =~ /\*\//) {
 			$findInParams = 0;
@@ -58,7 +60,7 @@ while (<>)
 		if ($_ =~ /^\s*\*\s*".*"\s*:\s*#\s*.*/) {
 			$paramComment = $_;
 			$paramComment =~ s/^\s*\*\s*(".*"\s*:\s*#\s*.*)/$1/;
-			$outParamComments .= "/// $paramComment";
+			$outParamComments .= " * \t$paramComment";
 		} elsif ($_ =~ /\*\//) {
 			$findOutParams = 0;
 		}
@@ -73,23 +75,35 @@ while (<>)
 	} elsif ($_ =~ /Route.*(function\d{3})/) {
 		chomp($outParamComments);
 		chop($inParamKeyValues);
-		print "/// $title\n";
-		print "/// ```\n";
-		print "/// {\n";
-		print "$outParamComments";
-		print "\n/// }\n";
-		print "/// ```";
-		print "\n$inParamComments";
-		print "class func $1($inParams success: ((JSON) -> Void)?, failure: ((Int, String) -> Void)?) {";
+		print "/**\n";
+		print " * $title\n";
+		print " * <p>\n";
+		print " * <blockquote>\n";
+		print " * <pre>\n";
+		print " * {\n";
+		print "$outParamComments\n";
+		print " * }\n";
+		print " * </pre>\n";
+		print " * </blockquote>\n";
+		print "$inParamComments";
+		print " */\n";
+		print "public static void $1($inParams Callback callback) {";
 		if (!$inParamKeyValues) {
 			$inParamKeyValues = ":";
 		}
-		print "\tAbstractRequest.post(url:\"$moduleName\/$1\", params:[$inParamKeyValues], success: success, failure: failure)";
-		print "}\n\n";
+		print "\nJSONObject jsonObject = new JSONObject();\n";
+		print "\n\ttry {\n";
+		print "$combineParams\n";
+		print "\t} catch (JSONException ex) {\n";
+		print "\t\tex.printStackTrace();\n";
+		print "\t}";
+		print "\n\tHttpAgent.getInstance().post(\"$moduleName\/$1\", json, callback);";
+		print "\n}\n\n";
 		$inParamComments = "";
 		$inParams = "";
 		$outParamComments = "";
 		$inParamKeyValues = "";
+		$combineParams = "";
 	}
 }
 print "}";
