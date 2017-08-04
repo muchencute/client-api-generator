@@ -15,6 +15,10 @@ $combineParams = "";
 
 print "package $ARGV[1];\n";
 
+print "import org.json.JSONException;\n";
+print "import org.json.JSONObject;\n";
+print "import okhttp3.Callback;\n";
+
 open(FILE, "$ARGV[0]") or die $!;
 
 while (<FILE>)
@@ -22,8 +26,9 @@ while (<FILE>)
 	if ($_ =~ /^\s*[a-z\s]*class\s*(\w+)Router/) {
 		$moduleName = $_;
 		chomp($moduleName);
-		$moduleName =~ s/.*class\s(\w+)Router.*/$1/;
-		print "class $moduleName : AbstractRequest {\n\n";
+		$moduleName =~ s/.*class\s(\w+)Router.*/$1Router/;
+		print "public class $moduleName {\n\n";
+		$moduleName =~ s/(\w+)Router/$1/;
 		$moduleName =~ s/(.*)/\L$1\E/;
 	} elsif ($_ =~ /^\s*\/\*{2,}/) {
 		$comment = "";
@@ -87,17 +92,19 @@ while (<FILE>)
 		print " * </blockquote>\n";
 		print "$inParamComments";
 		print " */\n";
-		print "public static void $1($inParams Callback callback) {";
+		print "public static void $1($inParams HttpAgent.ICallback callback) {";
 		if (!$inParamKeyValues) {
 			$inParamKeyValues = ":";
 		}
 		print "\nJSONObject jsonObject = new JSONObject();\n";
-		print "\n\ttry {\n";
-		print "$combineParams\n";
-		print "\t} catch (JSONException ex) {\n";
-		print "\t\tex.printStackTrace();\n";
-		print "\t}";
-		print "\n\tHttpAgent.getInstance().post(\"$moduleName\/$1\", json, callback);";
+		if ($combineParams) {
+			print "\n\ttry {\n";
+			print "$combineParams\n";
+			print "\t} catch (JSONException ex) {\n";
+			print "\t\tex.printStackTrace();\n";
+			print "\t}";
+		}
+		print "\n\tHttpAgent.getInstance().post(\"$moduleName\/$1\", jsonObject.toString(), callback);";
 		print "\n}\n\n";
 		$inParamComments = "";
 		$inParams = "";

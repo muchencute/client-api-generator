@@ -1,14 +1,5 @@
 #!/usr/bin/perl -w
 
-$status = system("vi", "tmpfile");
-if ($status != 0) {
-	die "Fail to open tmpfile, $status, $!";
-}
-
-open(DATA, "<tmpfile") or die "ERROR，$!";
-
-$no = "001";
-
 $module = "";
 $protocol = "";
 $protoObject = "";
@@ -21,9 +12,26 @@ $arrayName = "";
 
 $executed = "";
 
-while (<DATA>) {
+print "package $ARGV[0];\n\n";
+
+open(FILE, "<$ARGV[1]") or die $!;
+
+while (<FILE>) {
 	if ($_ =~ /^\s*class\s*=\s*(\w+).*/) {
 		$module = $1;
+		print "public class $module {\n\n";
+	} elsif ($_ =~ /^\s*no\s*=(.*)/) {
+		$function = "function$1";
+		chomp($function);
+		$protocol = "";
+		$protoObject = "";
+		$findParams = 0;
+		$findReturn = 0;
+		$returnType = "";
+		@params = ();
+		$arrayName = "";
+		@spout = ();
+		$executed = "";
 	} elsif ($_ =~ /^\s*spout\s*=(.*)/) {
 		$spout = $1;
 		chomp($spout);
@@ -40,15 +48,15 @@ while (<DATA>) {
 	} elsif ($_ =~ /^\s*title\s*=\s*(.*)/) {
 		$title = $1;
 		chomp($title);
-		print "/**\n";
-		print " * $title\n";
+		print "\t/**\n";
+		print "\t * $title\n";
 	} elsif ($_ =~ /^\s*params\s*=\s*\{.*/) {
 		$findParams = 1;
-		print " * <p>\n";
-		print " * 请求\n";
-		print " * <blockquote>\n";
-		print " * <pre>\n";
-		print " * \t\{\n";
+		print "\t * <p>\n";
+		print "\t * 请求\n";
+		print "\t * <blockquote>\n";
+		print "\t * <pre>\n";
+		print "\t * \t\{\n";
 	} elsif ($findParams == 1) {
 		if ($_ =~ /^\s*(\w+):\s*(\w+):(.*)/) {
 			$paramName = $1;
@@ -56,36 +64,36 @@ while (<DATA>) {
 			$paramDes = $3;
 			chomp($paramDes);
 			if ($paramType eq "str") {
-				print " * \t\t\"$paramName\":\t# $paramDes，字符串\n";
+				print "\t * \t\t\"$paramName\":\t# $paramDes，字符串\n";
 				push(@params, "$paramName:$paramType");
 			} elsif ($paramType eq "num") {
-				print " * \t\t\"$paramName\":\t# $paramDes，数字\n";
+				print "\t * \t\t\"$paramName\":\t# $paramDes，数字\n";
 				push(@params, "$paramName:$paramType");
 			}
 		} elsif ($_ =~ /^\s*\}\s*$/) {
 			$findParams = 0;
-			print " * \t}\n";
-			print " * </pre>\n";
-			print " * </blockquote>\n";
+			print "\t * \t}\n";
+			print "\t * </pre>\n";
+			print "\t * </blockquote>\n";
 		}
 	} elsif ($_ =~ /^\s*return\s*=\s*([\{\[x]).*/) {
 		$findReturn = 1;
 		if ($1 eq "{") {
-			print " * 返回对象结构\n";
-			print " * <blockquote>\n";
-			print " * <pre>\n";
-			print " * \t{\n";
+			print "\t * 返回对象结构\n";
+			print "\t * <blockquote>\n";
+			print "\t * <pre>\n";
+			print "\t * \t{\n";
 		} elsif ($1 eq "[") {
-			print " * <blockquote>\n";
-			print " * <pre>\n";
-			print " * 返回数组结构\n";
-			print " * \t{\n";
+			print "\t * <blockquote>\n";
+			print "\t * <pre>\n";
+			print "\t * 返回数组结构\n";
+			print "\t * \t{\n";
 		} elsif ($1 eq "x") {
-			print " * <blockquote>\n";
-			print " * <pre>\n";
-			print " * \t返回 {\@code result} 为空\n";
-			print " * </pre>\n";
-			print " * </blockquote>\n";
+			print "\t * <blockquote>\n";
+			print "\t * <pre>\n";
+			print "\t * \t返回 {\@code result} 为空\n";
+			print "\t * </pre>\n";
+			print "\t * </blockquote>\n";
 			$findReturn = 0;
 		}
 	} elsif ($findReturn == 1) {
@@ -96,18 +104,18 @@ while (<DATA>) {
 			chomp($paramDes);
 			if ($paramType eq "str") {
 				if ($returnType ne "arr") {
-					print " * \t\t\"$paramName\":\t# $paramDes，字符串\n";
+					print "\t * \t\t\"$paramName\":\t# $paramDes，字符串\n";
 				} else {
-					print " * \t\t\t\"$paramName\":\t# $paramDes，字符串\n";
+					print "\t * \t\t\t\"$paramName\":\t# $paramDes，字符串\n";
 				}
 			} elsif ($paramType eq "num") {
 				if ($returnType ne "arr") {
-					print " * \t\t\"$paramName\":\t# $paramDes，数字\n";
+					print "\t * \t\t\"$paramName\":\t# $paramDes，数字\n";
 				} else {
-					print " * \t\t\t\"$paramName\":\t# $paramDes，数字\n";
+					print "\t * \t\t\t\"$paramName\":\t# $paramDes，数字\n";
 				}
 			} elsif ($paramType eq "arr") {
-				print " * \t\t\"$paramName\": [{\n";
+				print "\t * \t\t\"$paramName\": [{\n";
 				$returnType = "arr";
 				$arrayName = $paramName;
 				$executed .= "\t\tJSONArray items = new JSONArray();\n";
@@ -124,33 +132,33 @@ while (<DATA>) {
 		} elsif ($_ =~ /^\s*\}\s*$/) {
 			if ($returnType eq "arr") {
 				$returnType = "";
-				print " * \t\t}]\n";
+				print "\t * \t\t}]\n";
 
 				$executed .= "\t\t\titems.put(item);\n";
 				$executed .= "\t\t}\n";
 				$executed .= "\t\t$protoObject\.getResult().put(\"$arrayName\", items);\n";
 			} else {
 				$findReturn = 0;
-				print " * \t}\n";
-				print " * </pre>\n";
-				print " * </blockquote>\n";
+				print "\t * \t}\n";
+				print "\t * </pre>\n";
+				print "\t * </blockquote>\n";
 			}
 		}
 	} elsif ($_ =~ /^\s*end\s*$/) {
-		print " */\n";
-		print "public static Route function$no = (Request req, Response res) -> {\n";
+		print "\t */\n";
+		print "\tpublic static Route $function = (Request req, Response res) -> {\n";
 
 		if ($#params >= 0) {
-			print "\tJSONObject body = new JSONObject(req.body());\n";
+			print "\t\tJSONObject body = new JSONObject(req.body());\n";
 
 			foreach $param (@params) {
 				$param =~ /(\w+):(\w+)/;
 				$paramName = $1;
 				$paramType = $2;
 				if ($paramType eq "str") {
-					print "\tString $paramName = body.optString(\"$paramName\");\n";
+					print "\t\tString $paramName = body.optString(\"$paramName\");\n";
 				} elsif ($paramType eq "num") {
-					print "\tint $paramName = body.optInt(\"$paramName\");\n";
+					print "\t\tint $paramName = body.optInt(\"$paramName\");\n";
 				}
 			}
 
@@ -158,15 +166,15 @@ while (<DATA>) {
 		}
 
 		if ($protocol eq "object") {
-			print "\tJERObject jerObject = new JERObject();\n";
+			print "\t\tJERObject jerObject = new JERObject();\n";
 		} elsif ($protocol eq "array") {
-			print "\tJERArray jerArray = new JERArray();\n";
+			print "\t\tJERArray jerArray = new JERArray();\n";
 		}
 
 		if ($#params >= 0) {
-			print "\tValidator validator = new Validator();\n";
+			print "\t\tValidator validator = new Validator();\n";
 
-			print "\tif (!validator";
+			print "\t\tif (!validator";
 
 			foreach $param (@params) {
 				$param =~ /(\w+):(\w+)/;
@@ -180,13 +188,13 @@ while (<DATA>) {
 			}
 
 			print ".isPassed()) {\n";
-			print "\t\t$protoObject.setError(1, validator.getErrorMessage());\n";
-			print "\t\treturn $protoObject.toString();\n";
-			print "\t}\n\n";
+			print "\t\t\t$protoObject.setError(1, validator.getErrorMessage());\n";
+			print "\t\t\treturn $protoObject.toString();\n";
+			print "\t\t}\n\n";
 		}
 
-		print "\tProcedureInvoker procedureInvoker = new ProcedureInvoker(Database.getDataSource());\n";
-		print "\tprocedureInvoker\.call(\"pro_$module\_function$no\",";
+		print "\t\tProcedureInvoker procedureInvoker = new ProcedureInvoker(Database.getDataSource());\n";
+		print "\t\tprocedureInvoker\.call(\"pro_$module\_$function\",";
 
 		if ($#params >= 0) {
 			foreach $param (@params) {
@@ -209,19 +217,19 @@ while (<DATA>) {
 		}
 
 		print "new OutParam(Types.INTEGER));\n";
-		print "\tprocedureInvoker\.executed((resultSet, arrayList) -> {\n";
+		print "\t\tprocedureInvoker\.executed((resultSet, arrayList) -> {\n";
 
 		$size = @spout;
 
-		print "\t\tint ret = (int) arrayList.get($size);\n";
-		print "\t\tswitch (ret) {\n";
-		print "\t\t\tcase 0:\n";
-		print "\t\t\t$protoObject\.setSuccess();\n"; 
-		print "\t\t\tbreak;\n";
-		print "\t\tdefault:\n";
-		print "\t\t\t$protoObject\.setError(10 + ret, \"Unknown exception in database\");\n";
-		print "\t\t\tbreak;\n";
-		print "\t\t}\n";
+		print "\t\t\tint ret = (int) arrayList.get($size);\n";
+		print "\t\t\tswitch (ret) {\n";
+		print "\t\t\t\tcase 0:\n";
+		print "\t\t\t\t$protoObject\.setSuccess();\n"; 
+		print "\t\t\t\tbreak;\n";
+		print "\t\t\tdefault:\n";
+		print "\t\t\t\t$protoObject\.setError(10 + ret, \"Unknown exception in database\");\n";
+		print "\t\t\t\tbreak;\n";
+		print "\t\t\t}\n";
 
 		if ($#spout >= 0) {
 			$i = 0;
@@ -230,29 +238,32 @@ while (<DATA>) {
 					$outType = $1;
 					$outName = $2;
 					if ($outType eq "num") {
-						print "\t\tint $outName = (int)arrayList.get($i);\n";
+						print "\t\t\tint $outName = (int)arrayList.get($i);\n";
 					} elsif ($outType eq "str") {
-						print "\t\tString $outName = arrayList.get($i).toString();\n";
+						print "\t\t\tString $outName = arrayList.get($i).toString();\n";
 					}
 				}
 				$i = $i + 1;
 			}
 		}
 
-		$executed .= "\t\t$protoObject\.setSuccess();\n";
+		$executed .= "\t\t\t$protoObject\.setSuccess();\n";
 		print $executed;
 
-		print "\t}).close();\n\n";
+		print "\t\t}).close();\n\n";
 
-		print "\tif (procedureInvoker.isErrorOccured()) {\n";
-		print "\t\t$protoObject\.setError(10, procedureInvoker.getErrorMessage());\n";
-		print "\t}\n\n";
+		print "\t\tif (procedureInvoker.isErrorOccured()) {\n";
+		print "\t\t\t$protoObject\.setError(10, procedureInvoker.getErrorMessage());\n";
+		print "\t\t}\n\n";
 
-		print "\treturn $protoObject\.toString();\n";
+		print "\t\treturn $protoObject\.toString();\n";
+		print "\t};\n";
 	}
 }
 
-print "};\n";
+print "}\n\n";
+
+close(FILE);
 
 sub camel2pieces {
 
@@ -261,6 +272,3 @@ sub camel2pieces {
 	return $words;
 
 }
-
-close(DATA);
-$status = system("rm", "-rf", "tmpfile");
