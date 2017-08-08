@@ -313,6 +313,7 @@ sub camel2pieces {
 
 		$words = shift;
 		$words =~ s/ID/Id/g;
+		$words =~ s/URL/Url/g;
 		$words =~ s/([A-Z])/\L_$1\E/g;
 		$words =~ s/(\d+)/_$1/g;
 		return $words;
