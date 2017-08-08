@@ -121,8 +121,10 @@ while (<FILE>) {
 						if ($protocol eq "array") {
 						        $isSingleLine = 0;
 								if ($paramType eq "num") {
+										print "\t * \t\t$paramName\":\t# $paramDes，数字\n";
 										$executed .= "item.put(\"$paramName\", resultSet.getInt(\"".camel2pieces($paramName)."\"));\n";
 								} elsif ($paramType eq "str") {
+										print "\t * \t\t$paramName\":\t# $paramDes，字符串\n";
 										$executed .= "item.put(\"$paramName\", resultSet.getString(\"".camel2pieces($paramName)."\"));\n";
 								}
 						} else {
