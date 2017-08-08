@@ -1,6 +1,8 @@
 #!/user/bin/env node
 var rf = require("fs")
 
+// 参数是 Java 文件名
+
 process.stdin.setEncoding('utf8')
 
 const headerStr = `
@@ -32,7 +34,7 @@ const footerStr = `
 }
 `
 
-const filename = 'AccountRouter.java'
+const filename = process.argv.slice(2)[0];
 
 const replaceRegArray = [
     /\s+\*\s<p>/,
