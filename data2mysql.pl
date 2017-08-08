@@ -30,11 +30,11 @@ while(<>) {
 	}
 }
 
-print "host=$host\n";
-print "schema=$schema\n";
-print "port=$port\n";
-print "username=$username\n";
-print "password=$password\n";
+print "-- host=$host\n";
+print "-- schema=$schema\n";
+print "-- port=$port\n";
+print "-- username=$username\n";
+print "-- password=$password\n";
 
 $dsn = "DBI:mysql:database=information_schema;host=$host;port=$port";
 
@@ -44,6 +44,7 @@ print "use $schema;\n\n";
 
 foreach my $table (@tables) {
 	print "-- $table\n";
+	print "truncate table `$table`;\n\n";
 	generate($table);
 	print "\n\n";
 }
@@ -101,5 +102,3 @@ sub randText {
 	}
 	return $text.".";
 }
-
-print randWord;
