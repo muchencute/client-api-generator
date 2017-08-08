@@ -1,0 +1,8 @@
+host=rdsg1jgxq44evy5t5b1bo.mysql.rds.aliyuncs.com
+port=3306
+username=nothingmi
+password=atp0769AT
+schema=qyresearch
+
+table=faq
+table=recruitment
