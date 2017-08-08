@@ -8,12 +8,12 @@ process.stdin.setEncoding('utf8')
 const headerStr = `
 import { Injectable } from '@angular/core'
 
-import { SettingsService } from '../../core/settings/settings.service'
-import { HttpService } from '../../core/http/http.service'
+import { SettingService } from '../core/setting/setting.service'
+import { HttpService } from '../core/http/http.service'
 
 @Injectable()
 export class OrderService {
-  constructor (private httpService: HttpService, private settingsService: SettingsService) {
+  constructor (private httpService: HttpService, private settingService: SettingService) {
   }
 
   private post (url: string, body: any) {
@@ -24,7 +24,7 @@ export class OrderService {
       const errorFn = (resp) => {
         reject(resp)
       }
-      this.httpService.post(this.settingsService.serverURL + url, body, successFn, errorFn)
+      this.httpService.post(this.settingService.getServerURL + url, body, successFn, errorFn)
     })
   }
 `
@@ -50,7 +50,7 @@ let addItemToRequestParamArray = false
 const moduleName = filename.replace('Router.java', '').toLowerCase()
 
 serviceResult.push(headerStr)
-rf.readFile('./' + filename, 'utf-8', function (err, data) {
+rf.readFile(filename, 'utf-8', function (err, data) {
     if (err) {
         console.log("error")
     } else {
