@@ -17,7 +17,7 @@ while (<FILE>) {
 		} elsif ($_ =~ /^\s*no\s*=(.*)/) {
 				$function = "function$1";
 				chomp($function);
-				print "\t\tpost(\"$function\", $module"."Router.$function);\n";
+				print "\t\tpost(\"/$function\", $module"."Router.$function);\n";
 		}
 }
 
