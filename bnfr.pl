@@ -46,6 +46,7 @@ while (<FILE>) {
 				$arrayName = "";
 				@spout = ();
 				$executed = "";
+				$isSingleLine = 1;
 		} elsif ($_ =~ /^\s*spout\s*=(.*)/) {
 				$spout = $1;
 				chomp($spout);
@@ -286,7 +287,7 @@ while (<FILE>) {
 					$executed .= "}\n";
 				}
 
-				if ($isSingleLine == 1) {
+				if ($isSingleLine == 1 && $executed) {
 				    $executed = "if (resultSet.next()) {\n".$executed;
 				    $executed .= "}\n";
 				}

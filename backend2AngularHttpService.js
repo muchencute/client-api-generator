@@ -2,9 +2,17 @@
 var rf = require("fs")
 
 // 参数1 是 Java 文件名
-// 参数2 是 base URL
 
 process.stdin.setEncoding('utf8')
+
+const argument = process.argv.slice(2);
+const filename = argument[0];
+
+const lastIndexOfSlash = filename.lastIndexOf('/');
+let className = filename.replace('Router.java', 'Api');
+let moduleName = filename.replace('Router.java', '').toLowerCase()
+className = className.slice(lastIndexOfSlash + 1);
+moduleName = moduleName.slice(lastIndexOfSlash + 1);
 
 const headerStr = `
 import { Injectable } from '@angular/core'
@@ -13,7 +21,7 @@ import { SettingService } from '../core/setting/setting.service'
 import { HttpService } from '../core/http/http.service'
 
 @Injectable()
-export class OrderService {
+export class ${className}Service {
   constructor (private httpService: HttpService, private settingService: SettingService) {
   }
 
@@ -25,7 +33,7 @@ export class OrderService {
       const errorFn = (resp) => {
         reject(resp)
       }
-      this.httpService.post(this.settingService.getServerURL + url, body, successFn, errorFn)
+      this.httpService.post(this.settingService.getServerURL() + url, body, successFn, errorFn)
     })
   }
 `
@@ -34,10 +42,6 @@ const footerStr = `
 
 }
 `
-const argument = process.argv.slice(2);
-const filename = argument[0];
-const baseURL = argument[1];
-
 const replaceRegArray = [
     /\s+\*\s<p>/,
     /\s+\*\s<\/?blockquote>/,
@@ -48,10 +52,6 @@ const serviceResult = []
 
 const requestParamArray = [ '' ]
 let addItemToRequestParamArray = false
-
-let moduleName = filename.replace('Router.java', '').toLowerCase()
-const lastIndexOfSlash = filename.lastIndexOf('/');
-moduleName = moduleName.slice(lastIndexOfSlash + 1);
 
 serviceResult.push(headerStr)
 rf.readFile(filename, 'utf-8', function (err, data) {
@@ -82,7 +82,7 @@ rf.readFile(filename, 'utf-8', function (err, data) {
                 getFunctionNoReg.exec(item)
                 const oneFuncDef = `
                 public ${RegExp.$1} (##requestParam##) {
-                    return this.post('${baseURL}${moduleName}/${RegExp.$1}', { ##requestParam## })
+                    return this.post('${moduleName}/${RegExp.$1}', { ##requestParam## })
                 }
                 `
                 serviceResult.push(oneFuncDef)
