@@ -20,7 +20,7 @@ print "import com.muchencute.commons.database.ProcedureInvoker;\n";
 print "import com.muchencute.commons.protocol.JERArray;\n";
 print "import com.muchencute.commons.protocol.JERObject;\n";
 print "import com.muchencute.commons.validator.Validator;\n";
-print "import com.qyresearch.website.common.Database;\n";
+print "import $ARGV[0].common.Database;\n";
 print "import org.json.JSONObject;\n";
 print "import org.json.JSONArray;\n";
 print "import spark.Request;\n";
