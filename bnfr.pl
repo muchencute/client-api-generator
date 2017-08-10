@@ -242,10 +242,10 @@ while (<FILE>) {
 				if ($#spout >= 0) {
 						foreach $out (@spout) {
 								$out =~ /(\w+):\w+/;
-								$out = $1;
-								if ($out eq "str") {
+								my $outType = $1;
+								if ($outType eq "str") {
 										print "new OutParam(Types.VARCHAR),";
-								} elsif ($out eq "num") {
+								} elsif ($outType eq "num") {
 										print "new OutParam(Types.INTEGER),";
 								}
 						}
@@ -323,5 +323,5 @@ sub camel2pieces {
 sub isSPOut {
 
     $word = shift;
-        return (grep /^$word$/, @spout);
+    return (grep /^\w+:$word$/, @spout);
 }
