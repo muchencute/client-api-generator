@@ -10,7 +10,7 @@ $returnType = "";
 $arrayName = "";
 @spout = ();
 $isSingleLine = 1;
-
+$resultSet = 1;
 $executed = "";
 
 print "package $ARGV[0].router;\n\n";
@@ -47,6 +47,11 @@ while (<FILE>) {
 				@spout = ();
 				$executed = "";
 				$isSingleLine = 1;
+				$resultSet=1;
+		} elsif ($_ =~ /^\s*resultSet\s*=(.*)/) {
+				if ($1 eq 'false') {
+					$resultSet = 0;
+				}
 		} elsif ($_ =~ /^\s*spout\s*=(.*)/) {
 				$spout = $1;
 				chomp($spout);
@@ -288,8 +293,10 @@ while (<FILE>) {
 				}
 
 				if ($isSingleLine == 1 && $executed) {
-				    $executed = "if (resultSet.next()) {\n".$executed;
-				    $executed .= "}\n";
+					if ($resultSet == 1) {
+				    	$executed = "if (resultSet.next()) {\n".$executed;
+				    	$executed .= "}\n";
+					}
 				}
 
 				$executed .= "\t\t\t$protoObject.setSuccess();\n";
