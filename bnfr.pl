@@ -268,7 +268,7 @@ while (<FILE>) {
 				print "\t\t\t\tbreak;\n";
 				print "\t\t\tdefault:\n";
 				print "\t\t\t\t$protoObject.setError(10 + ret, \"Unknown exception in database\");\n";
-				print "\t\t\t\tbreak;\n";
+				print "\t\t\t\treturn;\n";
 				print "\t\t\t}\n";
 
 				if ($#spout >= 0) {
