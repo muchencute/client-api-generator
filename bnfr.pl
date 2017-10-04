@@ -20,7 +20,9 @@ print "import com.muchencute.commons.database.ProcedureInvoker;\n";
 print "import com.muchencute.commons.protocol.JERArray;\n";
 print "import com.muchencute.commons.protocol.JERObject;\n";
 print "import com.muchencute.commons.validator.Validator;\n";
-print "import $ARGV[0].common.Database;\n";
+print "import com.muchencute.commons.database.Database;\n";
+print "import org.slf4j.Logger;\n";
+print "import org.slf4j.LoggerFactory;\n";
 print "import org.json.JSONObject;\n";
 print "import org.json.JSONArray;\n";
 print "import spark.Request;\n";
@@ -34,6 +36,7 @@ while (<FILE>) {
 		if ($_ =~ /^\s*class\s*=\s*(\w+).*/) {
 				$module = $1;
 				print "public class $module"."Router {\n\n";
+				print "private final static Logger logger = LoggerFactory.getLogger(\"\U$module\E"."_LOG\");\n\n";
 		} elsif ($_ =~ /^\s*no\s*=(.*)/) {
 				$function = "function$1";
 				chomp($function);
